@@ -13,6 +13,15 @@ curl -fsSL https://raw.githubusercontent.com/khbarkar/vic/main/install.sh | bash
 vic
 ```
 
+## What It Does
+
+- Lets you pick an AI CLI
+- Lets you pick a folder
+- Opens a new iTerm2 tab
+- Splits it into two panes
+- Starts the selected CLI on the left
+- Opens a shell in the same folder on the right
+
 ## Manual Install
 
 ```bash
@@ -40,11 +49,3 @@ Example:
 
 If `initial_folder` is not set, VIC defaults to `~/private`.
 
-## What It Does
-
-- Lets you pick an AI CLI
-- Lets you pick a folder
-- Opens a new iTerm2 tab
-- Splits it into two panes
-- Starts the selected CLI on the left
-- Opens a shell in the same folder on the right
