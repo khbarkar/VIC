@@ -1,5 +1,5 @@
 BINARY   := vic
-SRC_PATH := $(HOME)/private/ai/$(BINARY)
+SRC_PATH := $(CURDIR)/$(BINARY)
 BIN_PATH := $(HOME)/.local/bin/$(BINARY)
 
 .PHONY: build run install test lint clean

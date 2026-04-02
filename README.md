@@ -1,14 +1,19 @@
 <p align="center">
-  <img src="img/logo.png" alt="VIC logo" width="320">
+  <img src="img/logo.png" alt="VIC logo" width="1024">
 </p>
 
-# VIC
+# Vanilla Ice Cream 
 
-Vanilla Ice Cream.
-
-A small terminal launcher for AI coding CLIs on macOS.
+A small terminal launcher for AI coding CLIs on macOS. 
 
 ## Quick Start
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/khbarkar/vic/main/install.sh | bash
+vic
+```
+
+## Manual Install
 
 ```bash
 git clone git@github.com:khbarkar/vic.git
