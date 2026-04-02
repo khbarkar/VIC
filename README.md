@@ -10,9 +10,11 @@ A small terminal launcher for AI coding CLIs on macOS.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/khbarkar/vic/main/install.sh | bash
+```
+Then run 
+```bash
 vic
 ```
-
 ## What It Does
 
 - Lets you pick an AI CLI
