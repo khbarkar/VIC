@@ -12,10 +12,6 @@
     <a href="https://go.dev/">
       <img src="https://img.shields.io/badge/go-1.25.7-00ADD8?logo=go" alt="Go Version">
     </a>
-    <a href="https://github.com/khbarkar/VIC/actions/workflows/release.yml">
-      <img src="https://img.shields.io/github/actions/workflow/status/khbarkar/VIC/release.yml?branch=main&label=release%20workflow" alt="Release
-  Workflow">
-    </a>
   </p>
 
 # Vanilla Ice Cream 
