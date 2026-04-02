@@ -16,7 +16,7 @@ func GetConfigDir() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(home, ".config", "ai-launcher"), nil
+	return filepath.Join(home, ".config", "vic"), nil
 }
 
 func LoadConfig() (*Config, error) {

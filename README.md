@@ -68,7 +68,7 @@ vic
 VIC reads an optional config file from:
 
 ```bash
-~/.config/ai-launcher/config.json
+~/.config/vic/config.json
 ```
 
 Example:
