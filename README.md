@@ -2,6 +2,21 @@
   <img src="img/logo.png" alt="VIC logo" width="717">
 </p>
 
+<p align="center">
+  <a href="https://github.com/khbarkar/vic/releases/latest">
+    <img src="https://img.shields.io/github/v/release/khbarkar/vic?label=release" alt="Latest Release">
+  </a>
+  <a href="https://github.com/khbarkar/vic/blob/main/LICENSE">
+    <img src="https://img.shields.io/github/license/khbarkar/vic" alt="License">
+  </a>
+  <a href="https://go.dev/">
+    <img src="https://img.shields.io/badge/go-1.25.7-00ADD8?logo=go" alt="Go Version">
+  </a>
+  <a href="https://github.com/khbarkar/vic/actions/workflows/release.yml">
+    <img src="https://img.shields.io/github/actions/workflow/status/khbarkar/vic/release.yml?label=release%20workflow" alt="Release Workflow">
+  </a>
+</p>
+
 # Vanilla Ice Cream 
 
 A small terminal launcher for AI coding CLIs on macOS. 
