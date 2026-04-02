@@ -1,6 +1,7 @@
 package launcher
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"os/exec"
@@ -51,6 +52,40 @@ func ResolveCommand(cli CLIInfo) (string, error) {
 	return "", fmt.Errorf("command not found for %s", cli.Name)
 }
 
+func resolveLaunchArgs(cli CLIInfo, cmdPath string) ([]string, error) {
+	args := []string{cmdPath}
+
+	if usesEnvNode(cmdPath) {
+		nodePath, err := exec.LookPath("node")
+		if err != nil {
+			return nil, fmt.Errorf("node is required to launch %s: %w", cli.Name, err)
+		}
+		args = []string{nodePath, cmdPath}
+	}
+
+	switch cli.ID {
+	case "kiro":
+		args = append(args, "chat")
+	}
+
+	return args, nil
+}
+
+func usesEnvNode(path string) bool {
+	file, err := os.Open(path)
+	if err != nil {
+		return false
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	if !scanner.Scan() {
+		return false
+	}
+
+	return strings.TrimSpace(scanner.Text()) == "#!/usr/bin/env node"
+}
+
 func ExpandPath(path string) (string, error) {
 	if strings.HasPrefix(path, "~/") {
 		home, err := os.UserHomeDir()
@@ -84,10 +119,9 @@ func Launch(cli CLIInfo, dir string) error {
 	badge := cli.Name
 	title := badge
 
-	cliArgs := []string{cmdPath}
-	switch cli.ID {
-	case "kiro":
-		cliArgs = append(cliArgs, "chat")
+	cliArgs, err := resolveLaunchArgs(cli, cmdPath)
+	if err != nil {
+		return err
 	}
 
 	quotedCliArgs := make([]string, len(cliArgs))
@@ -117,13 +151,14 @@ on run argv
     end if
 
     set primarySession to current session of newTab
+    set secondarySession to (split vertically with default profile) of primarySession
+
     tell primarySession
-      write text cliCommand
+      write text dirCommand
     end tell
 
-    set secondarySession to (split vertically with default profile) of primarySession
     tell secondarySession
-      write text dirCommand
+      write text cliCommand
     end tell
   end tell
 end run
