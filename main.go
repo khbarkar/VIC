@@ -430,7 +430,12 @@ func renderTwoPanelLayout(width int, leftLabel, leftBody, rightLabel, rightBody 
 }
 
 func renderAppFrame(width, height int, parts ...string) string {
-	body := lipgloss.JoinVertical(lipgloss.Center, parts...)
+	bodyParts := append([]string{}, parts...)
+	if len(bodyParts) > 0 {
+		last := bodyParts[len(bodyParts)-1]
+		bodyParts[len(bodyParts)-1] = renderFooter(width, last)
+	}
+	body := lipgloss.JoinVertical(lipgloss.Center, bodyParts...)
 	content := lipgloss.JoinVertical(
 		lipgloss.Left,
 		lipgloss.NewStyle().
@@ -443,6 +448,23 @@ func renderAppFrame(width, height int, parts ...string) string {
 		Width(max(1, width)).
 		Height(max(1, height)).
 		Render(content)
+}
+
+func renderFooter(width int, left string) string {
+	if Version == "" {
+		Version = "dev"
+	}
+	release := ui.MetaStyle.Render("release v" + Version)
+	return lipgloss.NewStyle().
+		Width(max(1, width-4)).
+		Render(lipgloss.JoinHorizontal(
+			lipgloss.Top,
+			left,
+			lipgloss.NewStyle().
+				Width(max(1, width-4-lipgloss.Width(left))).
+				AlignHorizontal(lipgloss.Right).
+				Render(release),
+		))
 }
 
 func equalPanelWidth(width int) int {

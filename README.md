@@ -29,6 +29,22 @@ If you are running from a local checkout:
 ```bash
 make update
 ```
+
+## Release Versioning
+
+VIC uses semantic versioning:
+
+- patch: bug fixes
+- minor: new features
+- major: breaking changes
+
+The current version is stored in `VERSION`.
+
+On pushes to `main`, the release workflow bumps and tags automatically:
+
+- `fix:` or any non-feature change -> patch
+- `feat:` -> minor
+- `BREAKING CHANGE` or `!:` -> major
 ## What It Does
 
 - Lets you pick an AI CLI
