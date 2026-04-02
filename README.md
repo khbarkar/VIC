@@ -75,11 +75,13 @@ Example:
 
 ```json
 {
-  "initial_folder": "~/private"
+  "initial_folder": "~/private",
+  "hidden_projects": ["SnakesInAK8s"]
 }
 ```
 
 If `initial_folder` is not set, VIC defaults to `~/private`.
+If `hidden_projects` is set, those direct child folders are hidden from the TUI picker but left untouched on disk.
 
 ## License
 

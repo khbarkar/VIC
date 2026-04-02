@@ -7,7 +7,8 @@ import (
 )
 
 type Config struct {
-	InitialFolder string `json:"initial_folder"`
+	InitialFolder  string   `json:"initial_folder"`
+	HiddenProjects []string `json:"hidden_projects"`
 }
 
 func GetConfigDir() (string, error) {

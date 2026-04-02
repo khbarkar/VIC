@@ -65,6 +65,7 @@ type model struct {
 	state       string
 	selectedCLI launcher.CLIInfo
 	privateDir  string
+	hiddenNames map[string]struct{}
 	err         error
 	winWidth    int
 	winHeight   int
@@ -81,8 +82,19 @@ func initialModel() model {
 	}
 	_ = os.MkdirAll(privateDir, 0755)
 
+	hiddenNames := map[string]struct{}{}
+	if cfg != nil {
+		for _, name := range cfg.HiddenProjects {
+			name = strings.TrimSpace(name)
+			if name == "" {
+				continue
+			}
+			hiddenNames[name] = struct{}{}
+		}
+	}
+
 	cliList := newList(buildCLIItems(), "Choose AI")
-	projectList := newList(buildProjectItems(privateDir), "Choose Project")
+	projectList := newList(buildProjectItems(privateDir, hiddenNames), "Choose Project")
 
 	nameInput := textinput.New()
 	nameInput.Placeholder = "project-name"
@@ -95,6 +107,7 @@ func initialModel() model {
 		nameInput:   nameInput,
 		state:       "list",
 		privateDir:  privateDir,
+		hiddenNames: hiddenNames,
 	}
 }
 
@@ -123,7 +136,7 @@ func buildCLIItems() []list.Item {
 	return items
 }
 
-func buildProjectItems(privateDir string) []list.Item {
+func buildProjectItems(privateDir string, hiddenNames map[string]struct{}) []list.Item {
 	entries, err := os.ReadDir(privateDir)
 	if err != nil {
 		return []list.Item{
@@ -139,6 +152,9 @@ func buildProjectItems(privateDir string) []list.Item {
 
 		name := entry.Name()
 		if strings.HasPrefix(name, ".") {
+			continue
+		}
+		if _, hidden := hiddenNames[name]; hidden {
 			continue
 		}
 
@@ -205,7 +221,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 				m.selectedCLI = i.cli
 				m.state = "dir_pick"
-				m.projectList.SetItems(buildProjectItems(m.privateDir))
+				m.projectList.SetItems(buildProjectItems(m.privateDir, m.hiddenNames))
 				return m, nil
 			} else if m.state == "dir_pick" {
 				i, ok := m.projectList.SelectedItem().(item)
@@ -545,15 +561,17 @@ func renderProjectItemBody(entry item, selected bool) string {
 		titleStyle = ui.SelectedItemStyle
 	}
 
-	meta := entry.description
 	if entry.kind == "action" {
-		meta = "Create a new direct child under ~/private"
+		return lipgloss.JoinVertical(
+			lipgloss.Left,
+			titleStyle.Render(titleLine),
+			ui.ItemMetaStyle.Render("  Create new project"),
+		)
 	}
 
 	return lipgloss.JoinVertical(
 		lipgloss.Left,
 		titleStyle.Render(titleLine),
-		ui.ItemMetaStyle.Render("  "+meta),
 	)
 }
 
@@ -596,7 +614,6 @@ func renderProjectSelectionDetail(entry item) string {
 	return lipgloss.JoinVertical(
 		lipgloss.Left,
 		ui.ProjectStyle.Render(entry.label),
-		ui.MetaStyle.Render(entry.description),
 		"",
 		ui.ItemBodyStyle.Render("Ready to launch in this project."),
 	)
