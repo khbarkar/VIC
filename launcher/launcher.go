@@ -20,11 +20,11 @@ type CLIInfo struct {
 }
 
 var CLIs = []CLIInfo{
-	{ID: "gemini", Name: "Gemini", PrimaryCmd: "gemini", CursorColor: "#4A90E2", Category: "LLM", About: "Google CLI for Gemini chat and coding workflows.", Models: []string{"Gemini 2.5 Pro", "Gemini 2.5 Flash"}},
-	{ID: "codex", Name: "Codex", PrimaryCmd: "codex", CursorColor: "#8B5E3C", Category: "LLM", About: "OpenAI coding agent in the terminal.", Models: []string{"GPT-5", "GPT-5 Mini"}},
-	{ID: "kiro", Name: "Kiro", PrimaryCmd: "kiro-cli", CursorColor: "#8A2BE2", Category: "LLM", About: "Kiro terminal chat workflow.", Models: []string{"Kiro Chat"}},
-	{ID: "grok", Name: "Grok", PrimaryCmd: "grok-cli", FallbackCmd: "grok", CursorColor: "#D4A017", Category: "LLM", About: "xAI terminal assistant.", Models: []string{"Grok 4"}},
-	{ID: "claude", Name: "Claude", PrimaryCmd: "claude", CursorColor: "#8B4513", Category: "LLM", About: "Anthropic CLI for chat and code tasks.", Models: []string{"Claude Sonnet", "Claude Opus"}},
+	{ID: "gemini", Name: "Gemini", PrimaryCmd: "gemini", CursorColor: "#4A90E2", Category: "Code AI", About: "Google CLI for Gemini chat and coding workflows.", Models: []string{"Gemini 2.5 Pro", "Gemini 2.5 Flash"}},
+	{ID: "codex", Name: "Codex", PrimaryCmd: "codex", CursorColor: "#8B5E3C", Category: "Code AI", About: "OpenAI coding agent in the terminal.", Models: []string{"GPT-5", "GPT-5 Mini"}},
+	{ID: "kiro", Name: "Kiro", PrimaryCmd: "kiro-cli", CursorColor: "#8A2BE2", Category: "Code AI", About: "Kiro terminal chat workflow.", Models: []string{"Kiro Chat"}},
+	{ID: "grok", Name: "Grok", PrimaryCmd: "grok-cli", FallbackCmd: "grok", CursorColor: "#D4A017", Category: "Code AI", About: "xAI terminal assistant.", Models: []string{"Grok 4"}},
+	{ID: "claude", Name: "Claude", PrimaryCmd: "claude", CursorColor: "#8B4513", Category: "Code AI", About: "Anthropic CLI for chat and code tasks.", Models: []string{"Claude Sonnet", "Claude Opus"}},
 	{ID: "cursor", Name: "Cursor", PrimaryCmd: "agent", FallbackCmd: "cursor-agent", CursorColor: "#2E8B57", Category: "Tool", About: "Cursor agent workflow from the terminal.", Models: []string{"Configured in Cursor"}},
 	{ID: "copilot", Name: "Copilot", PrimaryCmd: "copilot-cli", FallbackCmd: "copilot", CursorColor: "#FF5FA2", Category: "Tool", About: "GitHub Copilot command-line workflow.", Models: []string{"Configured in Copilot"}},
 	{ID: "openclaw", Name: "OpenClaw", PrimaryCmd: "openclaw", CursorColor: "#DC143C", Category: "Tool", About: "OpenClaw terminal workflow.", Models: []string{"Configured in OpenClaw"}},
@@ -135,5 +135,30 @@ end run
 	if err != nil {
 		return fmt.Errorf("osascript failed: %w\nOutput: %s", err, string(output))
 	}
+	return nil
+}
+
+func Update(repoDir string) error {
+	absRepoDir, err := ExpandPath(repoDir)
+	if err != nil {
+		return err
+	}
+
+	if _, err := os.Stat(filepath.Join(absRepoDir, ".git")); err != nil {
+		return fmt.Errorf("no git checkout found at %s", absRepoDir)
+	}
+
+	pullCmd := exec.Command("git", "-C", absRepoDir, "pull", "--ff-only")
+	pullOutput, err := pullCmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("git pull failed: %w\n%s", err, strings.TrimSpace(string(pullOutput)))
+	}
+
+	installCmd := exec.Command("make", "-C", absRepoDir, "install")
+	installOutput, err := installCmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("make install failed: %w\n%s", err, strings.TrimSpace(string(installOutput)))
+	}
+
 	return nil
 }

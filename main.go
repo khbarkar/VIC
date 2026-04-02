@@ -4,6 +4,7 @@ import (
 	"ai/config"
 	"fmt"
 	"os"
+	"os/user"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -282,56 +283,63 @@ func (m model) View() string {
 			Render(lipgloss.JoinVertical(lipgloss.Left, ui.AlertStyle.Render(errText), help))
 	}
 
-	cardHeight := 0
 	cardWidth := equalPanelWidth(m.winWidth)
 	subtitle := ui.SubTitleStyle.Render("Choose one model, choose one folder under ~/private, and launch into a split iTerm2 tab.")
 
 	switch m.state {
 	case "list":
+		leftContent := renderSelectableContent(m.cliList, renderCLIItemBody)
+		rightContent := renderDetailContent(selectedListItem(m.cliList), "Select a model to continue.", renderCLISelectionDetail)
+		panelHeight := sharedPanelHeight(leftContent, rightContent)
 		body := renderTwoPanelLayout(
 			m.winWidth,
 			ui.PillStyle.Render("CHOOSE MODEL"),
-			renderSelectablePanel(m.cliList, cardWidth, cardHeight, renderCLIItemBody),
+			ui.RenderPanel(leftContent, true, cardWidth, panelHeight),
 			ui.PillStyle.Render("DETAIL"),
-			renderDetailPanel(selectedListItem(m.cliList), "Select a model to continue.", renderCLISelectionDetail, cardWidth, cardHeight),
+			ui.RenderPanel(rightContent, false, cardWidth, panelHeight),
 		)
 		help := ui.RenderHelp("up/down move", "enter continue", "q quit")
 		return renderAppFrame(m.winWidth, m.winHeight, subtitle, body, help)
 
 	case "dir_pick":
+		leftContent := renderSelectableContent(m.projectList, renderProjectItemBody)
+		rightContent := renderInfoContent([]string{
+			"AI: " + m.selectedCLI.Name,
+			"Only direct children of ~/private are shown.",
+			"Choose one folder or create a new project.",
+		})
+		panelHeight := sharedPanelHeight(leftContent, rightContent)
 		body := renderTwoPanelLayout(
 			m.winWidth,
 			ui.PillStyle.Render("CHOOSE PROJECT"),
-			renderSelectablePanel(m.projectList, cardWidth, cardHeight, renderProjectItemBody),
+			ui.RenderPanel(leftContent, true, cardWidth, panelHeight),
 			ui.PillStyle.Render("LAUNCH"),
-			renderInfoPanel([]string{
-				"AI: " + m.selectedCLI.Name,
-				"Only direct children of ~/private are shown.",
-				"Choose one folder or create a new project.",
-			}, cardWidth, cardHeight),
+			ui.RenderPanel(rightContent, false, cardWidth, panelHeight),
 		)
 		help := ui.RenderHelp("up/down move", "enter launch", "q back")
 		return renderAppFrame(m.winWidth, m.winHeight, subtitle, body, help)
 
 	case "create_dir":
-		form := ui.RenderPanel(lipgloss.JoinVertical(
+		leftContent := lipgloss.JoinVertical(
 			lipgloss.Left,
 			ui.PillStyle.Render("NEW PROJECT"),
 			"",
 			ui.SubTitleStyle.Render("Create one folder directly under ~/private."),
 			"",
 			ui.InputShellStyle.Render(m.nameInput.View()),
-		), true, cardWidth, cardHeight)
+		)
+		rightContent := renderInfoContent([]string{
+			"Model: " + m.selectedCLI.Name,
+			"Folder must be a single directory name.",
+			"Launch happens immediately after create.",
+		})
+		panelHeight := sharedPanelHeight(leftContent, rightContent)
 		body := renderTwoPanelLayout(
 			m.winWidth,
 			"",
-			form,
+			ui.RenderPanel(leftContent, true, cardWidth, panelHeight),
 			"",
-			renderInfoPanel([]string{
-				"Model: " + m.selectedCLI.Name,
-				"Folder must be a single directory name.",
-				"Launch happens immediately after create.",
-			}, cardWidth, cardHeight),
+			ui.RenderPanel(rightContent, false, cardWidth, panelHeight),
 		)
 		help := ui.RenderHelp("type folder name", "enter create and launch", "q cancel")
 		return renderAppFrame(m.winWidth, m.winHeight, subtitle, body, help)
@@ -340,6 +348,15 @@ func (m model) View() string {
 }
 
 func main() {
+	if len(os.Args) > 1 && os.Args[1] == "update" {
+		if err := runUpdate(); err != nil {
+			fmt.Printf("Error: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Println("VIC updated.")
+		return
+	}
+
 	p := tea.NewProgram(initialModel(), tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Error: %v\n", err)
@@ -359,6 +376,34 @@ func max(a, b int) int {
 		return a
 	}
 	return b
+}
+
+func runUpdate() error {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+
+	repoDir := filepath.Join(home, ".vic")
+	if _, err := os.Stat(filepath.Join(repoDir, ".git")); err != nil {
+		cwd, cwdErr := os.Getwd()
+		if cwdErr == nil {
+			if _, statErr := os.Stat(filepath.Join(cwd, ".git")); statErr == nil {
+				repoDir = cwd
+			}
+		}
+	}
+
+	if _, err := os.Stat(filepath.Join(repoDir, ".git")); err != nil {
+		currentUser, _ := user.Current()
+		homeDir := home
+		if currentUser != nil && currentUser.HomeDir != "" {
+			homeDir = currentUser.HomeDir
+		}
+		return fmt.Errorf("could not find a VIC checkout to update; expected %s or the current directory", filepath.Join(homeDir, ".vic"))
+	}
+
+	return launcher.Update(repoDir)
 }
 
 func renderTwoPanelLayout(width int, leftLabel, leftBody, rightLabel, rightBody string) string {
@@ -401,43 +446,50 @@ func renderAppFrame(width, height int, parts ...string) string {
 }
 
 func equalPanelWidth(width int) int {
-	usable := min(110, max(72, width-10))
-	return max(30, (usable-3)/2)
+	usable := min(132, max(80, width-10))
+	return max(34, (usable-3)/2)
 }
 
-func renderSelectablePanel(l list.Model, width, height int, renderer func(item, bool) string) string {
+func renderSelectableContent(l list.Model, renderer func(item, bool) string) string {
 	items := l.Items()
 	if len(items) == 0 {
-		return ui.RenderPanel(ui.EmptyStateStyle.Render("Nothing here yet."), true, width, height)
+		return ui.EmptyStateStyle.Render("Nothing here yet.")
 	}
 
 	lines := make([]string, 0, len(items))
 	selected := l.Index()
+	lastCategory := ""
 	for idx, raw := range items {
 		entry, ok := raw.(item)
 		if !ok {
 			continue
 		}
+		if entry.kind == "cli" && entry.cli.Category != lastCategory {
+			if lastCategory != "" {
+				lines = append(lines, "")
+			}
+			lines = append(lines, ui.SectionHeaderStyle.Render(entry.cli.Category))
+			lastCategory = entry.cli.Category
+		}
 		lines = append(lines, renderer(entry, idx == selected))
 	}
 
-	return ui.RenderPanel(lipgloss.JoinVertical(lipgloss.Left, lines...), true, width, height)
+	return lipgloss.JoinVertical(lipgloss.Left, lines...)
 }
 
-func renderDetailPanel(selected *item, empty string, renderer func(item) string, width, height int) string {
-	content := ui.EmptyStateStyle.Render(empty)
+func renderDetailContent(selected *item, empty string, renderer func(item) string) string {
 	if selected != nil {
-		content = renderer(*selected)
+		return renderer(*selected)
 	}
-	return ui.RenderPanel(content, false, width, height)
+	return ui.EmptyStateStyle.Render(empty)
 }
 
-func renderInfoPanel(lines []string, width, height int) string {
+func renderInfoContent(lines []string) string {
 	rendered := make([]string, 0, len(lines))
 	for _, line := range lines {
 		rendered = append(rendered, ui.ItemBodyStyle.Render(line))
 	}
-	return ui.RenderPanel(lipgloss.JoinVertical(lipgloss.Left, rendered...), false, width, height)
+	return lipgloss.JoinVertical(lipgloss.Left, rendered...)
 }
 
 func renderCLIItemBody(entry item, selected bool) string {
@@ -544,4 +596,12 @@ func selectedListItem(l list.Model) *item {
 		return nil
 	}
 	return &entry
+}
+
+func sharedPanelHeight(parts ...string) int {
+	height := 18
+	for _, part := range parts {
+		height = max(height, lipgloss.Height(part))
+	}
+	return height
 }
