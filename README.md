@@ -4,7 +4,7 @@
 
   <p align="center">
     <a href="https://github.com/khbarkar/VIC/tags">
-      <img src="https://img.shields.io/github/v/tag/khbarkar/VIC?label=release" alt="Latest Tag">
+      <img src="https://img.shields.io/github/v/tag/khbarkar/VIC?label=tag" alt="Latest Tag">
     </a>
     <a href="https://github.com/khbarkar/VIC/blob/main/LICENSE">
       <img src="https://img.shields.io/github/license/khbarkar/VIC" alt="License">
@@ -21,7 +21,7 @@ A small terminal launcher for AI coding CLIs on macOS.
 ## Quick Start
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/khbarkar/vic/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/khbarkar/VIC/main/install.sh | bash
 ```
 
 Then run:
@@ -48,7 +48,7 @@ vic update
 ## Manual Install
 
 ```bash
-git clone git@github.com:khbarkar/vic.git
+git clone git@github.com:khbarkar/VIC.git
 cd vic
 make install
 vic
