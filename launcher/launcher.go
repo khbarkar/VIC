@@ -23,6 +23,7 @@ type CLIInfo struct {
 var CLIs = []CLIInfo{
 	{ID: "gemini", Name: "Gemini", PrimaryCmd: "gemini", CursorColor: "#4A90E2", Category: "Code AI", About: "Google CLI for Gemini chat and coding workflows.", Models: []string{"Gemini 2.5 Pro", "Gemini 2.5 Flash"}},
 	{ID: "codex", Name: "Codex", PrimaryCmd: "codex", CursorColor: "#8B5E3C", Category: "Code AI", About: "OpenAI coding agent in the terminal.", Models: []string{"GPT-5", "GPT-5 Mini"}},
+	{ID: "deepseek", Name: "DeepSeek", PrimaryCmd: "deepseek", CursorColor: "#1F6FEB", Category: "Code AI", About: "DeepSeek terminal assistant for coding workflows.", Models: []string{"DeepSeek Chat", "DeepSeek Coder"}},
 	{ID: "kiro", Name: "Kiro", PrimaryCmd: "kiro-cli", CursorColor: "#8A2BE2", Category: "Code AI", About: "Kiro terminal chat workflow.", Models: []string{"Kiro Chat"}},
 	{ID: "grok", Name: "Grok", PrimaryCmd: "grok-cli", FallbackCmd: "grok", CursorColor: "#D4A017", Category: "Code AI", About: "xAI terminal assistant.", Models: []string{"Grok 4"}},
 	{ID: "claude", Name: "Claude", PrimaryCmd: "claude", CursorColor: "#8B4513", Category: "Code AI", About: "Anthropic CLI for chat and code tasks.", Models: []string{"Claude Sonnet", "Claude Opus"}},

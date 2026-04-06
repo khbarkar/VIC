@@ -45,6 +45,8 @@ vic update
 - Starts the selected CLI on the left
 - Opens a shell in the same folder on the right
 
+Supported launchers include Codex, Claude, Gemini, DeepSeek, Grok, Kiro, Cursor, Copilot, and OpenClaw, as long as their CLI command is installed locally.
+
 ## Manual Install
 
 ```bash
